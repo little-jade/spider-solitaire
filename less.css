@@ -1,0 +1,55 @@
+.app {
+    width: 900px;
+    background-color: #060;
+}
+.header,.floor {
+    height: 50px;
+    background-color: #040;
+}
+.title {
+    color: red;
+    text-align: center;
+    line-height: 50px;
+}
+.main {
+    height: 500px;
+}
+
+.card {
+    position: absolute;
+    width: 60px;
+    height: 90px;
+
+    box-shadow: 0 0 1px 1px #ccc;
+    border-radius: 5px;
+    border: 4px solid #eee;
+        
+    transition: top .2s, left .2s;
+    user-select: none;
+}
+.card_notransition {
+    transition: top 0s, left 0s;
+}
+.color_1 {
+    color: #c00;
+}
+.color_2 {
+    color: #080;
+}
+.color_3 {
+    color: #00a;
+}
+.color_0 {
+    color: #000;
+}
+.card_back {
+    background-color: #339;
+    line-height: 0px;
+    font-size: 0px;
+}
+.card_face {
+    background-color: #eee;
+    line-height: 12px;
+    font-size: 16px;
+    font-weight: bolder;
+}
