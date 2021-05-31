@@ -1,3 +1,8 @@
+const CARD_WIDTH = 60;
+const CARD_HEIGHT = 90;
+const CARD_INTERVEL = 10;
+const CARD_FONT_SIZE = 20;
+var maxZ = 0;
 // 向量
 class Vec {
     constructor(x, y) {
@@ -34,6 +39,10 @@ class Card {
         document.body.appendChild(elcard);
         this.cardDom = elcard;
     }
+    setEvent(eventName, callBack) {
+        this.cardDom[eventName] = callBack;
+
+    }
     updateDom() {
         this.cardDom.setAttribute("class", `card card_${this.isView ? "face": "back"} color_${this.color}`);
         this.cardDom.style["z-index"] = window.maxZ++;
@@ -45,11 +54,29 @@ class Card {
         this.isView = true;
         this.updateDom();
     }
+    turn(view) {
+        this.isView = value;
+        this.cardDom.classList.add(view ? "card_face" : "card_back");
+    }
     // 移动
     moveTo(newPosition) {
         this.lastPosition = this.position;
         this.position = newPosition;
         this.updateDom();
+    }
+    movePlus(vec) {
+        this.lastPosition = this.position;
+        this.position = this.position.plus(vec);
+        this.updateDom();
+        this.next?.movePlus(vec);
+    }
+    posPlus(vec) {
+        let pos = this.position.plus(vec);
+        this.cardDom.style["z-index"] = window.maxZ++;
+        this.cardDom.classList.add("card_notransition");
+        this.cardDom.style.top = pos.y + "px";
+        this.cardDom.style.left = pos.x + "px";
+        this.next?.posPlus(vec);
     }
     moveDom(newPosition) {
         this.cardDom.style["z-index"] = window.maxZ++;
@@ -60,6 +87,20 @@ class Card {
     // 
     back() {
         this.moveTo(this.lastPosition);
+    }
+    moveBack() {
+        this.moveTo(this.lastPosition);
+        this.next?.moveBack();
+    }
+    fit(card){
+        return this.point == card.point + 1 && this.color == card.color;
+    }
+    fitHalf(card){
+        return this.point == card.point + 1;
+    }
+    get isActive() {
+        if(!this.next) return true;
+        return this.next.isActive && this.fit(this.next);
     }
     // 回收
     // 发放
@@ -79,13 +120,13 @@ class Level{
         this.initCards = cards.splice(0, 54);
         this.sourceCards = new Array(5).fill(0).map((item, index) => {
             return {
-                position: new Vec(660 + index * 20, 100),
+                position: new Vec(50 + index * 20, 60),
                 cards: cards.splice(0, 10)
             }
         });
         this.workCards = new Array(10).fill(0).map((item, index) => {
             return {
-                position: new Vec(50 + index * 80, 200),
+                position: new Vec(50 + index * 100, 160),
                 cards: [],
                 get lastCard() {
                     return this.cards[this.cards.length - 1];
@@ -95,12 +136,12 @@ class Level{
         });
         this.completedCards = new Array(8).fill(0).map((item, index) => {
             return {
-                position: new Vec(50 + index * 80, 100),
+                position: new Vec(250 + index * 80, 60),
                 cards: [],
             }
         });
         this.historyStates = [];
-        this.maxZ = 0;
+        window.maxZ = 0;
     }
     // 初始发牌
     start() {
@@ -329,20 +370,186 @@ class Level{
     }
 }
 
-class Game{
-    constructor(levels) {
-        this.levels = levels;
-        this.level = 0;
-    }
-    // 随机游戏
-    randomGame() {
-        let randomCards;
-        let level = new Level(randomCards);
-    }
-    // 重开当前游戏
-    // 下一关
-    // 指定关卡
+class Container{
+    constructor(type, position) {
+        this.type = type;
+        this.cards = [];
+        this.width = CARD_WIDTH;
+        this.position = position;
 
+        this._dom = elt("div", {class: `container_${type}`});
+        this._dom.style.top = position.y + "px";
+        this._dom.style.left = position.x + "px";
+        document.body.appendChild(this._dom)
+    }
+    in(cards) {
+        cards = !Array.isArray(cards) ? [cards] : cards;
+        cards.forEach(card => {
+            this.cards.push(card);
+            card.moveTo(this.position);
+            card.container = this;
+        });
+    }
+
+    outN(n) {
+        return this.cards.splice(this.cards.length - n, n);
+    }
+    out(card) {
+        this.cards.pop();
+    }
+
+}
+class WorkCol extends Container{
+    constructor(type, position, width) {
+        super(type, position, width);
+    }
+    get isEmpty() {
+        return !this.lastCard;
+    }
+    get nextPosition() {
+        return this.lastCard?.position.plus(new Vec(0, 20)) ?? this.position;
+    }
+    get isCompleted() {
+        if(this.lastCard.point != 0) return false;
+        let current = this.lastCard;
+        while(current.pre && current.pre.isView && current.pre.fit(current)){
+            current = current.pre;
+        }
+        return current.point == 12;
+    }
+    in(card) {
+        if(this.lastCard) this.lastCard.next = card;
+        while(card){
+            card.pre = this.lastCard;            
+            card.container = this;
+            card.moveTo(this.nextPosition);
+            this.lastCard = card;
+            card = card.next;
+        }
+    }
+    out(card) {
+        this.lastCard = card.pre;
+        if(!this.lastCard) return;
+        this.lastCard.toView();
+        this.lastCard.next = null;
+    }
+    
+    isOver(position) {
+        return Math.abs(position.x - this.position.x) < this.width;
+    }
+
+}
+class Game{
+    constructor() {
+        this.source = new Container("source", new Vec(0, 100));
+        this.works = new Array(10).fill(0).map( (_, i) => new WorkCol("work", new Vec(100 * i, 200) ));
+        this.tombs = new Array(8).fill(0).map( (_, i) => new Container("tomb", new Vec(100 * i, 100) ));
+        this.history = [];
+    }
+    init() {
+        let header = elt("div",{}, [time, title, core]);
+        let main = elt("div", {}, []);
+        let floor = elt("div", {}, [tipBut, backBut]);
+        document.body.appendChild(header);
+        document.body.appendChild(main);
+        document.body.appendChild(floor);
+    }
+    start(plan) {
+        this.cards = plan.map(item => {
+            let card = new Card(...item, new Vec(100, -100), false);
+            card.setEvent("onclick",  () => {
+                if(card.container?.type != "source") return;
+                this.saveState();
+                this.deal(10);
+            });
+            card.setEvent("onmousedown",  (e) => {
+                if(card.container?.type != "work") return;
+                this.mousedown(card, e);
+            });
+            return card;
+        });
+        this.source.in(this.cards);
+        this.deal(54); 
+    }
+    deal(n) {
+        this.source.outN(n).forEach( (card, i) => {
+            if(i > n - 11) card.toView();
+            this.works[i % 10].in(card);
+        });
+    }
+    mousedown(card, downEvent) {
+        if(!card.isActive) return;
+        card.movePlus(new Vec(0, -4));
+
+        let [xadd, yadd] = [];
+        document.onmousemove = (event) => {
+            [xadd, yadd] = [event.clientX - downEvent.clientX, event.clientY - downEvent.clientY]
+
+            card.posPlus(new Vec(xadd, yadd), 0, 0);
+        }
+
+        document.onmouseup = (event) => {
+            document.onmousemove = null;
+            document.onmouseup = null;
+
+            let time = event.timeStamp -downEvent.timeStamp;
+            let container;
+            if(time < 300) { // 单击
+                container = this.getMoveableCol(card);
+            }
+            else { // 拖拽
+                let pos = card.position.plus(new Vec(xadd, yadd));
+                container = this.getMoveableCol(card, pos);
+            }
+            container ? this.move(card, container) : card.moveBack();
+        }
+
+    }
+    getMoveableCol(card, position) {
+        let col = this.works.indexOf(card.container);
+        let fithalfCol, emptyCol;
+        for(let i = (col + 1) % 10; i != col; i = (i + 1) % 10) {
+            let container = this.works[i];
+            let lastCard = container.lastCard;
+            if(position && !container.isOver(position)) continue;
+            if(container.isEmpty) {emptyCol = emptyCol ?? container; continue;}
+            if(lastCard.fit(card)) return container;
+            if(!fithalfCol && lastCard.fitHalf(card)) {fithalfCol = container;}
+        }
+        return fithalfCol ?? emptyCol ?? null;
+    }
+    move(card, container) {
+        this.saveState();
+        card.container.out(card);
+        container.in(card);
+        if(container.isCompleted){
+            let tomb = this.tombs.find(item => item.cards.length == 0);
+            for(let i = 0; i < 13; i++){
+                let lastCard = container.lastCard;
+                container.out(lastCard);
+                tomb.in(lastCard);
+            }
+        }
+    }
+    saveState() {
+        let state = this.cards.map(card => {
+            return {card, view: card.isView, container: card.container}
+        });
+        this.history.push(state);
+    }
+    revoke() {
+        this.history.pop().forEach(({card, view, container}) => {
+            card.turn(view)
+            if(card.container != container){
+                card.container.out(card);
+                container.in(card);
+            }
+        });
+    }
+    restart() {
+        this.start(this.cards)
+    }
+    nextLevel() {}
 }
 
 function runGame(colors = 1, degree = 1) {
@@ -355,8 +562,11 @@ function runGame(colors = 1, degree = 1) {
     }
     levelData = shuffle(levelData, degree);
     
-    let level = new Level(levelData);
-    level.start();
+    // let level = new Level(levelData);
+    // level.start();
+    //
+    let game = new Game();
+    game.start(levelData);
 }
 function shuffle(levelData, degree) {
     for(i = 0; i < degree * 10; i ++){
@@ -374,10 +584,10 @@ function elt(name, attribute, children) {
     Object.keys(attribute).forEach(key => {
         el.setAttribute(key, attribute[key]);
     })
-    children.forEach(child => {
+    children?.forEach(child => {
         el.appendChild(child);
     })
     return el;
 }
-window.maxZ = 0;
 runGame(2, 10);
+
