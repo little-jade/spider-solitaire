@@ -209,7 +209,7 @@ class Game{
         let buttons = [
             {text: "撤销", fuc: () => {this.playAudio("click");this.revoke();}},
             {text: "重开", fuc: () => {this.restart();}},
-            {text: "新游戏", fuc: () => {this.clear(); this.start(getPlan(2, 10))}}
+            {text: "新游戏", fuc: () => {this.clear(); this.start(getPlan(2, 100))}}
         ].map( item => {
             let b = elt("button", {class:"button"}, [item.text]);
             b.onclick = item.fuc;
@@ -376,5 +376,5 @@ function elt(name, attribute, children) {
     })
     return el;
 }
-runGame(2, 0);
+runGame(2, 100);
 
