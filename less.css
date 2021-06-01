@@ -67,18 +67,29 @@ body,h2 {
 .card_notransition {
     transition: top 0s, left 0s;
 }
-.color_1 {
-    color: #c00;
-}
-.color_2 {
-    color: #080;
-}
-.color_3 {
-    color: #00a;
-}
-.color_0 {
+.color_0, .color_2 {
     color: #000;
 }
+.color_1, .color_3 {
+    color: #DD2700;
+}
+.color_0::after {
+    content: "\2660";
+    float: right;
+}
+.color_1::after {
+    content: "\2665";
+    float: right;
+}
+.color_2::after {
+    content: "\2663";
+    float: right;
+}
+.color_3::after {
+    content: "\2666";
+    float: right;
+}
+
 .card_back {
     background-color: rgb(11, 40, 102);
     line-height: 0px;
@@ -87,8 +98,8 @@ body,h2 {
 .card_face {
     background-color: #eee;
     line-height: 20px;
-    font-size: 20px;
-    font-weight: 1000;
+    font-size: 22px;
+    font-weight: 900;
 }
 .container {
     position: absolute;
@@ -102,7 +113,14 @@ body,h2 {
 
 }
 .button {
-    width: 60px;
+    width: 80px;
     height: 40px;
     margin: 5px;
+    font-weight: bolder;
+    font-size: 16px;
+}
+.button_revoke {
+    margin-left: 300px;
+    color: red;
+
 }

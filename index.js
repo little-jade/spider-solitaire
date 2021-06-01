@@ -24,55 +24,43 @@ class Card {
         this.position = position;
         this.isView = isView;
 
-        let classes = [
-            "card", 
-            `card_${isView ? "face" : "back"}`, 
-            `color_${color}`
-        ].join(" ");
-        let elcard = elt(
-            "div", 
-            {class: classes}, 
-            [document.createTextNode(point)]
-        );
-        elcard.style.top = `${position.y}px`;
-        elcard.style.left = `${position.x}px`;
-        document.body.appendChild(elcard);
-        this.cardDom = elcard;
+        let text = point == 12 ? "K" :
+        point == 11 ? "Q" : 
+        point == 10 ? "J" :
+        point == 0 ? "A" :
+        point + 1;
+
+        this._dom = elt("div", {class: `card color_${color} card_back`}, [text]);
+        document.body.append(this._dom);
     }
     setEvent(eventName, callBack) {
-        this.cardDom[eventName] = callBack;
-
-    }
-    updateDom() {
-        this.cardDom.setAttribute("class", `card card_${this.isView ? "face": "back"} color_${this.color}`);
-        this.cardDom.style["z-index"] = window.maxZ++;
-        this.cardDom.style.top = this.position.y + "px";
-        this.cardDom.style.left = this.position.x + "px";
+        this._dom[eventName] = callBack;
     }
     // 翻开
     turn(view) {
         if(this.isView == view) return;
         this.isView = view;
-        this.updateDom();
+        this._dom.classList.remove("card_face", "card_back");
+        this._dom.classList.add(view ? "card_face" : "card_back");
     }
     // 移动
-    moveTo(newPosition) {
-        this.lastPosition = this.position;
-        this.position = newPosition;
-        this.updateDom();
+    moveTo(pos, savePos = true, xtime = 0.2, ytime = 0.2) {
+        if(savePos) {
+            this.lastPosition = this.position;
+            this.position = pos;
+        }
+
+        this._dom.style["z-index"] = window.maxZ++;
+        this._dom.style.transition = `top ${ytime}s, left ${xtime}s`;
+        this._dom.style.top = pos.y + "px";
+        this._dom.style.left = pos.x + "px";
     }
     movePlus(vec) {
-        this.lastPosition = this.position;
-        this.position = this.position.plus(vec);
-        this.updateDom();
+        this.moveTo(this.position.plus(vec));
         this.next?.movePlus(vec);
     }
     posPlus(vec) {
-        let pos = this.position.plus(vec);
-        this.cardDom.style["z-index"] = window.maxZ++;
-        this.cardDom.classList.add("card_notransition");
-        this.cardDom.style.top = pos.y + "px";
-        this.cardDom.style.left = pos.x + "px";
+        this.moveTo(this.position.plus(vec), false, 0, 0);
         this.next?.posPlus(vec);
     }
     moveBack() {
@@ -90,15 +78,7 @@ class Card {
         return this.next.isActive && this.fit(this.next);
     }
     toString() {
-        return this.cardDom.style["z-index"];
-    }
-    // 回收
-    // 发放
-
-
-    // 生成一副牌
-    static createCards(cardData) {
-        return cardData.map(item => new Card(...item, new Vec(100, -100), false));
+        return this._dom.style["z-index"];
     }
 }
 
@@ -172,6 +152,7 @@ class WorkCol extends Container{
         if(!this.lastCard) return;
         this.lastCard.turn(true);
         this.lastCard.next = null;
+        this.adjust();
     }
     getCards() {
         let cards = [];
@@ -183,11 +164,11 @@ class WorkCol extends Container{
         return cards;
     }
     adjust() {
-        if(!this.lastCard || this.lastCard.position.y < 600) return;
+        if(!this.lastCard?.isView) return;
         let cards = this.getCards().filter(card => card.isView);
         let {x: x0, y: y0} = cards[0].position;
-        let y = this.lastCard.position.y - y0;
-        let yadd = Math.floor(y/cards.length);        
+        let y = 550 - y0;
+        let yadd = Math.min( Math.floor(y/cards.length), 24);        
         cards.forEach((card, i) => {
             card.moveTo(new Vec(x0, y0 + yadd * i));
         });
@@ -203,15 +184,19 @@ class Game{
         this.works = new Array(10).fill(0).map( (_, i) => new WorkCol("work", new Vec(20 + 100 * i, 180) ));
         this.tombs = new Array(8).fill(0).map( (_, i) => new Container("tomb", new Vec(220 + 100 * i, 60) ));
         this.history = [];
+        this.audio = {
+            click: elt("audio", {src: "sound/click.wav"}),
+            deal: elt("audio", {src: "sound/deal.wav"})
+        };
         this.init();
     }
     init() {
         let buttons = [
-            {text: "撤销", fuc: () => {this.playAudio("click");this.revoke();}},
-            {text: "重开", fuc: () => {this.restart();}},
-            {text: "新游戏", fuc: () => {this.clear(); this.start(getPlan(2, 100))}}
+            {text: "重开", class: "button", fuc: () => {this.restart();}},
+            {text: "新游戏", class: "button", fuc: () => {this.clear(); this.start(getPlan(2, 10))}},
+            {text: "撤销", class: "button button_revoke", fuc: () => {this.playAudio("click");this.revoke();}},
         ].map( item => {
-            let b = elt("button", {class:"button"}, [item.text]);
+            let b = elt("button", {class:item.class}, [item.text]);
             b.onclick = item.fuc;
             return b;
         });
@@ -219,13 +204,11 @@ class Game{
         document.querySelector(".floor").append(...buttons);
     }
     playAudio(type) {
-        let audio = document.createElement("audio");
-        audio.src = `sound/${type}.wav`;
-        audio.play();
+        this.audio[type].play();
     }
     clear() {
         this.cards.forEach(card => {
-            card.cardDom.remove();
+            card._dom.remove();
         });
         this.source.cards = [];
         this.tombs.forEach(item => {item.cards = []});
@@ -251,7 +234,7 @@ class Game{
         this.deal(54); 
     }
     deal(n) {
-        this.playAudio(n > 10 ? "deal1" : "deal1");
+        this.playAudio("deal");
         this.source.outN(n).forEach( (card, i) => {
             setTimeout(() => {
                 if(i > n - 11) card.turn(true);
@@ -307,7 +290,7 @@ class Game{
         container.in(card);
         if(container.isCompleted){
             setTimeout(() => {
-                this.playAudio("deal1");
+                this.playAudio("deal");
                 let tomb = this.tombs.find(item => item.cards.length == 0);
                 for(let i = 0; i < 13; i++){
                     setTimeout(() => {
@@ -376,5 +359,5 @@ function elt(name, attribute, children) {
     })
     return el;
 }
-runGame(2, 100);
+runGame(4, 10);
 
