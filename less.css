@@ -1,19 +1,20 @@
 :root {
-    --app-height: 700px;
-    --app-width: 1100px;
+    --app-height: 100vh;
+    --app-width: 100%;
     --heider-height: 50px;
     --floor-height: 50px;
     --body-height: 600px;
     --card-width: 90px;
     --card-height: 100px;
 
-    --app-bg-color: #040;
-    --card-bg-color:#08f;
+    --app-bg-color: #1B7D4A;
+    --header-bg-color: #023705;
+    --card-bg-color:#0074BF;
 
-    --card-color0: #000;
-    --card-color1:#f00;
-    --card-color2:#f80;
-    --card-color3:#00f;
+    --container-color: #4EB88C;
+
+    --card-color0: #111111;
+    --card-color1:#D4173A;
 
 }
 body,h2 {
@@ -22,11 +23,21 @@ body,h2 {
 .app {
     width: var(--app-width);
     height: var(--app-height);
-    background-color: #040;
+    background-color: var(--app-bg-color);
+    display: flex;
+    flex-direction: column;
 }
 .header,.floor {
     height: 50px;
-    background-color: #030;
+    background-color: var(--header-bg-color);
+}
+.timer {
+    position: absolute;
+    left: 100px;
+    top: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 22px;
 }
 .title {
     color: red;
@@ -34,24 +45,9 @@ body,h2 {
     line-height: 50px;
 }
 .main {
-    height: 600px;
+    flex-grow: 1;
 }
 
-.card-slot {
-    width: 80px;
-    height: 100px;
-    border-radius: 5px;
-    border: 4px solid #eee;
-}
-.card-slot_source {
-    color:#000
-}
-.card-slot_work {
-    color:#000
-}
-.card-slot_source {
-    color:#000
-}
 .card {
     position: absolute;
     width: 80px;
@@ -74,10 +70,10 @@ body,h2 {
     transition: top 0s, left 0s;
 }
 .color_0, .color_2 {
-    color: #000;
+    color: var(--card-color0);
 }
 .color_1, .color_3 {
-    color: #DD2700;
+    color: var(--card-color1);
 }
 .color_0::after {
     content: "\2660";
@@ -97,7 +93,7 @@ body,h2 {
 }
 
 .card_back {
-    background-color: rgb(11, 40, 102);
+    background-color: var(--card-bg-color);
     line-height: 0px;
     font-size: 0px;
 }
@@ -112,11 +108,10 @@ body,h2 {
     width: 80px;
     height: 100px;
     border-radius: 5px;
-    border: 4px solid gray;
+    border: 4px solid var(--container-color);
 }
 .container_source {
-    border-color: gray;
-
+    border-color: var(--container-color);
 }
 .button {
     width: 80px;
@@ -126,10 +121,17 @@ body,h2 {
     font-size: 16px;
 }
 .button_revoke {
+    margin-left: 50px;
+    color: red;
+}
+.button_tip {
     margin-left: 300px;
     color: red;
 }
-.button_revoke {
-    margin-left: 300px;
-    color: red;
+.select {
+    width: 60px;
+    height: 30px;
+    margin: 5px;
+    font-weight: bold;
+    font-size: 14px;
 }

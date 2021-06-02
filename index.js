@@ -203,21 +203,61 @@ class Game{
             click: elt("audio", {src: "sound/click.wav"}),
             deal: elt("audio", {src: "sound/deal.wav"})
         };
+        this.colorN = 1;
+        this.degree = 1;
+        this.time = 0;
         this.init();
     }
     init() {
         let buttons = [
             {text: "重开", class: "button", fuc: () => {this.restart();}},
-            {text: "新游戏", class: "button", fuc: () => {this.clear(); this.start(getPlan(2, 10))}},
-            {text: "提示", class: "button button_revoke", fuc: () => {this.tip();}},
+            {text: "新游戏", class: "button", fuc: () => {this.nextLevel();}},
+            {text: "提示", class: "button button_tip", fuc: () => {this.tip();}},
             {text: "撤销", class: "button button_revoke", fuc: () => {this.playAudio("click");this.revoke();}},
         ].map( item => {
             let b = elt("button", {class:item.class}, [item.text]);
             b.onclick = item.fuc;
             return b;
         });
+        let selects = [
+            {class: "select", lebal: "花色种类", fc: (e) => {
+                this.colorN = e.target.selectedIndex + 1;
+                
+            }, options:[
+                {value: 1, label: "单色"},
+                {value: 2, label: "双色"},
+                {value: 3, label: "三色"},
+                {value: 4, label: "四色"},
+            ]},
+            {class: "select", lebal: "选择难度", fc: (e) => {
+                this.degree = e.target.selectedIndex + 1;
+            },  options:[
+                {value: 1, label: "初级"},
+                {value: 2, label: "中级"},
+                {value: 3, label: "高级"},
+            ]}
+        ].map(item => {
+            let s = elt("select", {class: item.class}, item.options.map(option => elt("option", {value: option.value}, [option.label])));
+            s.onchange = item.fc;
+            return s;
+        });
 
-        document.querySelector(".floor").append(...buttons);
+        document.querySelector(".floor").append(...selects, ...buttons);
+        let timer = elt("span", {class: "timer"});
+        setInterval(() => {
+            let time = Date.now() - this.time;
+            let s = time / 1000;
+            let m = s / 60;
+            let h = m / 60;
+            let text = [
+                (h).toFixed(),
+                (m % 60).toFixed(),
+                (s % 60).toFixed(),
+            ].map(item => item >= 10 ? item : "0" + item).join(":")
+            timer.textContent = text;
+            this.timeText = text;
+        }, 500);
+        document.querySelector(".header").prepend(timer);
     }
     playAudio(type) {
         this.audio[type].play();
@@ -248,15 +288,21 @@ class Game{
         });
         this.source.in(this.cards);
         this.deal(54); 
+        this.time = Date.now();
     }
     deal(n) {
         this.playAudio("deal");
         this.source.outN(n).forEach( (card, i) => {
             setTimeout(() => {
                 if(i > n - 11) card.turn(true);
-                this.works[i % 10].in(card);
+                let container = this.works[i % 10];
+                container.in(card);
+                if(container.isCompleted){
+                    this.complete(container);
+                }
             }, 0);
         });
+
     }
     mousedown(card, downEvent) {
         if(!card.isActive) return;
@@ -305,18 +351,46 @@ class Game{
         card.container.out(card);
         container.in(card);
         if(container.isCompleted){
-            setTimeout(() => {
-                this.playAudio("deal");
-                let tomb = this.tombs.find(item => item.cards.length == 0);
-                for(let i = 0; i < 13; i++){
-                    setTimeout(() => {
-                        let lastCard = container.lastCard;
-                        container.out(lastCard);
-                        tomb.in(lastCard);
-                    }, 10 * i);
-                }
-            }, 500);
+            this.complete(container);
         }
+    }
+    complete(container) {
+        setTimeout(() => {
+            this.playAudio("deal");
+            let tomb = this.tombs.find(item => item.cards.length == 0);
+            for(let i = 0; i < 13; i++){
+                setTimeout(() => {
+                    let lastCard = container.lastCard;
+                    container.out(lastCard);
+                    tomb.in(lastCard);
+                }, 10 * i);
+            }
+            if(this.tombs[this.tombs.length - 1] == tomb){
+                setTimeout(() => {
+                    let [score, rank] = this.saveScore();
+                    alert(`恭喜通关！用时：${score.useTime}。操作：${score.step}步。同等级游戏排名：${rank}`);
+                    this.nextLevel();
+                }, 500);                
+            }
+        }, 500);
+
+    }
+    saveScore() {
+        let gameScore = JSON.parse(localStorage.getItem("gameScore")) ?? {};
+        let key = [this.colorN , this.degree].join("-");
+        let scores = gameScore[key] ?? [];
+        let score = {
+            type: key, 
+            time: Date.now(), 
+            useMs: Date.now() - this.time, 
+            useTime: this.timeText, 
+            step: this.history.length};
+        scores.push(score);
+        gameScore[key] = scores;
+        localStorage.setItem("gameScore",JSON.stringify(gameScore));
+        let rank = scores.sort((a, b) => a.useMs - b.useMs).indexOf(score) + 1;
+        console.log(gameScore);
+        return [score, rank];
     }
     saveState() {
         let state = this.cards.sort().map(card => {
@@ -370,6 +444,10 @@ class Game{
         this.clear();
         this.start(this.plan)
     }
+    nextLevel() {
+        this.clear();
+        this.start(getPlan(this.colorN, this.degree));
+    }
 }
 
 function runGame(colors = 1, degree = 1) {
@@ -388,7 +466,8 @@ function getPlan(colors = 1, degree = 1) {
     return levelData;
 }
 function shuffle(levelData, degree) {
-    for(i = 0; i < degree * 10; i ++){
+    let n = Math.pow(10, degree);
+    for(i = 0; i < n; i ++){
         let a = Math.floor(Math.random() * 1000) % levelData.length;
         let b = Math.floor(Math.random() * 1000) % levelData.length;
 
@@ -408,5 +487,5 @@ function elt(name, attribute, children) {
     })
     return el;
 }
-runGame(4, 10);
+runGame();
 
