@@ -1,6 +1,17 @@
-const CARD_WIDTH = 60;
-const CARD_HEIGHT = 90;
-const CARD_INTERVEL = 10;
+
+let width = document.body.offsetWidth;
+let floor_top = document.querySelector(".floor").clientTop;
+const offsetLeft = 100;
+const offsetTop = 40;
+const margin = 20;
+
+const CARD_WIDTH = (width - offsetLeft * 2 - margin * 9) / 10;
+const CARD_HEIGHT = CARD_WIDTH * 1.2;
+const source_top = offsetTop + margin;
+const work_top = offsetTop + CARD_HEIGHT + 2 * margin;
+const card_intervel = CARD_WIDTH + margin;
+const max_y = 550;
+
 const CARD_FONT_SIZE = 20;
 var maxZ = 0;
 // 向量
@@ -31,7 +42,9 @@ class Card {
         point + 1;
 
         this._dom = elt("div", {class: `card color_${color} card_back`}, [text]);
-        document.body.append(this._dom);
+        this._dom.style.width = CARD_WIDTH + "px";
+        this._dom.style.height = CARD_HEIGHT + "px";
+        document.querySelector(".main").append(this._dom);
     }
     setEvent(eventName, callBack) {
         this._dom[eventName] = callBack;
@@ -99,7 +112,9 @@ class Container{
         this._dom = elt("div", {class: `container container_${type}`});
         this._dom.style.top = position.y + "px";
         this._dom.style.left = position.x + "px";
-        document.body.appendChild(this._dom)
+        this._dom.style.width = CARD_WIDTH + "px";
+        this._dom.style.height = CARD_HEIGHT + "px";
+        document.body.append(this._dom)
     }
     get nextPosition() {
         let groupN = Math.floor((this.cards.length - 1) / 10);
@@ -174,7 +189,8 @@ class WorkCol extends Container{
         if(!this.lastCard?.isView) return;
         let cards = this.getCards().filter(card => card.isView);
         let {x: x0, y: y0} = cards[0].position;
-        let y = 550 - y0;
+        let y = max_y - y0;
+        console.log(max_y, y0, y);
         let yadd = Math.min( Math.floor(y/cards.length), 24);        
         cards.forEach((card, i) => {
             card.moveTo(new Vec(x0, y0 + yadd * i));
@@ -195,9 +211,9 @@ class WorkCol extends Container{
 }
 class Game{
     constructor() {
-        this.source = new Container("source", new Vec(20, 60));
-        this.works = new Array(10).fill(0).map( (_, i) => new WorkCol("work", new Vec(20 + 100 * i, 180) ));
-        this.tombs = new Array(8).fill(0).map( (_, i) => new Container("tomb", new Vec(220 + 100 * i, 60) ));
+        this.source = new Container("source", new Vec(offsetLeft, source_top));
+        this.works = new Array(10).fill(0).map( (_, i) => new WorkCol("work", new Vec(offsetLeft + card_intervel * i, work_top) ));
+        this.tombs = new Array(8).fill(0).map( (_, i) => new Container("tomb", new Vec(offsetLeft + card_intervel * (i + 2), source_top) ));
         this.history = [];
         this.audio = {
             click: elt("audio", {src: "sound/click.wav"}),

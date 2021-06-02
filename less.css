@@ -4,7 +4,7 @@
     --heider-height: 50px;
     --floor-height: 50px;
     --body-height: 600px;
-    --card-width: 90px;
+    --card-width: 80px;
     --card-height: 100px;
 
     --app-bg-color: #1B7D4A;
@@ -28,7 +28,7 @@ body,h2 {
     flex-direction: column;
 }
 .header,.floor {
-    height: 50px;
+    height: var(--heider-height);
     background-color: var(--header-bg-color);
 }
 .timer {
@@ -50,8 +50,8 @@ body,h2 {
 
 .card {
     position: absolute;
-    width: 80px;
-    height: 100px;
+    width: var(--card-width);
+    height: var(--card-height);
 
     box-shadow: 0 0 1px 1px #ccc;
     border-radius: 5px;
