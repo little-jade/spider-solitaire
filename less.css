@@ -64,6 +64,12 @@ body,h2 {
     transition: top .2s, left .2s;
     user-select: none;
 }
+.card_light {
+    box-shadow: 0 0 6px 6px #f00;
+}
+.card_light_next {
+    box-shadow: 0 6px 6px 6px #f00;
+}
 .card_notransition {
     transition: top 0s, left 0s;
 }
@@ -122,5 +128,8 @@ body,h2 {
 .button_revoke {
     margin-left: 300px;
     color: red;
-
+}
+.button_revoke {
+    margin-left: 300px;
+    color: red;
 }

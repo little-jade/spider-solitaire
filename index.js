@@ -74,8 +74,15 @@ class Card {
         return this.point == card.point + 1;
     }
     get isActive() {
+        if(!this.isView) return false;
         if(!this.next) return true;
         return this.next.isActive && this.fit(this.next);
+    }
+    hightLight(first = true) {
+        let className = first ? "card_light" : "card_light_next"
+        this._dom.classList.add(className);
+        setTimeout(() => {this._dom.classList.remove(className);}, 500);
+        this.next?.hightLight(false);
     }
     toString() {
         return this._dom.style["z-index"];
@@ -176,6 +183,14 @@ class WorkCol extends Container{
     isOver(position) {
         return Math.abs(position.x - this.position.x) < this.width;
     }
+    hightLight() {
+        if(this.lastCard){
+            this.lastCard.hightLight();
+            return;
+        }
+        this._dom.classList.add("card_light");
+        setTimeout(() => {this._dom.classList.remove("card_light");}, 500);
+    }
 
 }
 class Game{
@@ -194,6 +209,7 @@ class Game{
         let buttons = [
             {text: "重开", class: "button", fuc: () => {this.restart();}},
             {text: "新游戏", class: "button", fuc: () => {this.clear(); this.start(getPlan(2, 10))}},
+            {text: "提示", class: "button button_revoke", fuc: () => {this.tip();}},
             {text: "撤销", class: "button button_revoke", fuc: () => {this.playAudio("click");this.revoke();}},
         ].map( item => {
             let b = elt("button", {class:item.class}, [item.text]);
@@ -307,6 +323,39 @@ class Game{
             return {card, view: card.isView, container: card.container}
         });
         this.history.push(state);
+    }
+    tip() {
+        let tipTag = JSON.stringify(this.history.length);
+        if(this.tipTag !== tipTag){
+            this.tips = this.getTips();
+            this.tipN = 0;
+            this.tipTag = tipTag;
+        }
+        
+        if(this.tips.length){
+            let [card, col] = this.tips[ this.tipN++ % this.tips.length];
+            card.hightLight();
+            col.hightLight();
+        }
+        else if(this.source.cards.length) {
+            this.source.cards[this.source.cards.length - 1].hightLight();
+        }        
+    }
+    getTips() {
+        let tips = [];
+        let upTips = [];
+        for(let work of this.works) {
+            let card = work.lastCard;
+            while(card?.isActive){
+                let col = this.getMoveableCol(card);
+                if(col){tips.push([card, col]);}
+                if(col && !card.pre?.isActive) {
+                    upTips.push([card, col]);
+                }
+                card = card.pre;
+            }
+        }
+        return upTips.length ? upTips : tips;
     }
     revoke() {
         this.history.pop()?.forEach(({card, view, container}) => {
