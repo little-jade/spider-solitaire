@@ -1,0 +1,21 @@
+{
+  "name": "spider-solitaire",
+  "version": "1.0.0",
+  "description": "蜘蛛纸牌",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/little-jade/spider-solitaire.git"
+  },
+  "author": "jade",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/little-jade/spider-solitaire/issues"
+  },
+  "homepage": "https://github.com/little-jade/spider-solitaire#readme"
+}

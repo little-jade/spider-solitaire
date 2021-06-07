@@ -190,7 +190,6 @@ class WorkCol extends Container{
         let cards = this.getCards().filter(card => card.isView);
         let {x: x0, y: y0} = cards[0].position;
         let y = max_y - y0;
-        console.log(max_y, y0, y);
         let yadd = Math.min( Math.floor(y/cards.length), 24);        
         cards.forEach((card, i) => {
             card.moveTo(new Vec(x0, y0 + yadd * i));
