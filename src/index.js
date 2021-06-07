@@ -215,8 +215,8 @@ class Game{
         this.tombs = new Array(8).fill(0).map( (_, i) => new Container("tomb", new Vec(offsetLeft + card_intervel * (i + 2), source_top) ));
         this.history = [];
         this.audio = {
-            click: elt("audio", {src: "sound/click.wav"}),
-            deal: elt("audio", {src: "sound/deal.wav"})
+            click: elt("audio", {src: "src/sound/click.wav"}),
+            deal: elt("audio", {src: "src/sound/deal.wav"})
         };
         this.colorN = 1;
         this.degree = 1;
