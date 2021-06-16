@@ -57,7 +57,7 @@ class Card {
         this._dom.classList.add(view ? "card_face" : "card_back");
     }
     // 移动
-    moveTo(pos, savePos = true, xtime = 0.2, ytime = 0.2) {
+    moveTo(pos, savePos = true, xtime = 0.1, ytime = 0.1) {
         if(savePos) {
             this.lastPosition = this.position;
             this.position = pos;
