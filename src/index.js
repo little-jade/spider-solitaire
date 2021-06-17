@@ -312,9 +312,9 @@ class Game{
                 this.saveState();
                 this.deal(10);
             });
-            card.setEvent("onmousedown",  (e) => {
+            card.setEvent("onpointerdown",  (e) => {
                 if(card.container?.type != "work") return;
-                this.mousedown(card, e);
+                this.pointerdown(card, e);
             });
             return card;
         });
@@ -336,21 +336,21 @@ class Game{
         });
 
     }
-    mousedown(card, downEvent) {
+    pointerdown(card, downEvent) {
         if(!card.isActive) return;
         card.movePlus(new Vec(0, -4));
 
         let [xadd, yadd] = [];
-        document.onmousemove = (event) => {
+        document.onpointermove = (event) => {
             [xadd, yadd] = [event.clientX - downEvent.clientX, event.clientY - downEvent.clientY]
 
             card.posPlus(new Vec(xadd, yadd), 0, 0);
         }
 
-        document.onmouseup = (event) => {
+        document.onpointerup = (event) => {
             this.playAudio("click");
-            document.onmousemove = null;
-            document.onmouseup = null;
+            document.onpointermove = null;
+            document.onpointerup = null;
 
             let time = event.timeStamp -downEvent.timeStamp;
             let container;
