@@ -62,6 +62,9 @@ class Card {
         this.isView = view;
         this._dom.classList.remove("card_face", "card_back");
         this._dom.classList.add(view ? "card_face" : "card_back");
+        let fontSize = (view ? font_size : 0) + "px";
+        this._dom.style["font-size"] = fontSize;
+        this._dom.style["line-height"] = fontSize;
     }
     // 移动
     moveTo(pos, savePos = true, xtime = 0.1, ytime = 0.1) {
@@ -194,11 +197,17 @@ class WorkCol extends Container{
     }
     adjust() {
         if(!this.lastCard?.isView) return;
-        let cards = this.getCards().filter(card => card.isView);
-        let {x: x0, y: y0} = cards[0].position;
+        let cards = this.getCards();
+        let viewCards = cards.filter(card => card.isView);
+        let lastBackCard = cards[cards.length - viewCards.length - 1];
+
+        let {x: x0, y: y0} = lastBackCard ? 
+            lastBackCard.position.plus(new Vec(0, yadd_back)) : 
+            viewCards[0].position;
         let y = max_y - y0;
-        let yadd = Math.min(Math.floor(y / (cards.length - 1)), yadd_view);        
-        cards.forEach((card, i) => {
+        let yadd = Math.min(Math.floor(y / (viewCards.length - 1)), yadd_view);
+
+        viewCards.forEach((card, i) => {
             card.moveTo(new Vec(x0, y0 + yadd * i));
         });
     }
@@ -481,7 +490,7 @@ function getPlan(colors = 1, degree = 1) {
     if(colors > 4 || colors < 1) colors = 1;
     let levelData = [];
     let colorType = 0;
-    for(i = 0 ; i < 104; i++){
+    for(let i = 0 ; i < 104; i++){
         if(i % 13 == 0) colorType++;
         levelData.push( [colorType % colors, i % 13] );
     }
@@ -490,14 +499,14 @@ function getPlan(colors = 1, degree = 1) {
 }
 function shuffle(levelData, degree) {
     let n = Math.pow(10, degree);
-    for(i = 0; i < n; i ++){
+    for(let i = 0; i < n; i ++){
         let a = Math.floor(Math.random() * 1000) % levelData.length;
         let b = Math.floor(Math.random() * 1000) % levelData.length;
 
         let t = levelData[a];
         levelData[a] = levelData[b];
         levelData[b] = t;
-    };
+    }
     return levelData;
 }
 function elt(name, attribute, children) {
