@@ -1,18 +1,20 @@
-
-let width = document.body.offsetWidth;
-let floor_top = document.querySelector(".floor").clientTop;
-const offsetLeft = 100;
-const offsetTop = 40;
-const margin = 20;
+const width = window.innerWidth;
+const height = window.innerHeight;
+const offsetLeft = 10;
+const offsetTop = 50;
+const margin = 10;
 
 const CARD_WIDTH = (width - offsetLeft * 2 - margin * 9) / 10;
 const CARD_HEIGHT = CARD_WIDTH * 1.2;
+const card_border = 4;
+const card_dom_width = CARD_WIDTH - 2 * card_border;
+const card_dom_height = CARD_HEIGHT - 2 * card_border;
+
 const source_top = offsetTop + margin;
 const work_top = offsetTop + CARD_HEIGHT + 2 * margin;
 const card_intervel = CARD_WIDTH + margin;
-const max_y = 550;
+const max_y = height - offsetTop - CARD_HEIGHT;
 
-const CARD_FONT_SIZE = 20;
 var maxZ = 0;
 // 向量
 class Vec {
@@ -42,8 +44,8 @@ class Card {
         point + 1;
 
         this._dom = elt("div", {class: `card color_${color} card_back`}, [text]);
-        this._dom.style.width = CARD_WIDTH + "px";
-        this._dom.style.height = CARD_HEIGHT + "px";
+        this._dom.style.width = card_dom_width + "px";
+        this._dom.style.height = card_dom_height + "px";
         document.querySelector(".main").append(this._dom);
     }
     setEvent(eventName, callBack) {
@@ -112,8 +114,8 @@ class Container{
         this._dom = elt("div", {class: `container container_${type}`});
         this._dom.style.top = position.y + "px";
         this._dom.style.left = position.x + "px";
-        this._dom.style.width = CARD_WIDTH + "px";
-        this._dom.style.height = CARD_HEIGHT + "px";
+        this._dom.style.width = card_dom_width + "px";
+        this._dom.style.height = card_dom_height + "px";
         document.body.append(this._dom)
     }
     get nextPosition() {
@@ -190,7 +192,7 @@ class WorkCol extends Container{
         let cards = this.getCards().filter(card => card.isView);
         let {x: x0, y: y0} = cards[0].position;
         let y = max_y - y0;
-        let yadd = Math.min( Math.floor(y/cards.length), 24);        
+        let yadd = Math.min(Math.floor(y / (cards.length - 1)), 24);        
         cards.forEach((card, i) => {
             card.moveTo(new Vec(x0, y0 + yadd * i));
         });
