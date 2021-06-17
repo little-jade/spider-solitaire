@@ -1,9 +1,9 @@
 const height = window.innerHeight;
 const width = window.innerWidth; 
 const isPhone = height > width;
-const offsetLeft = isPhone ? 10 : 100;
+const offsetLeft = isPhone ? 2 : 200;
 const offsetTop = 50;
-const margin = isPhone ? 10 : 10;
+const margin = isPhone ? 5 : 10;
 
 const CARD_WIDTH = (width - offsetLeft * 2 - margin * 9) / 10;
 const CARD_HEIGHT = CARD_WIDTH * 1.2;
