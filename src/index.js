@@ -1,14 +1,19 @@
-const width = window.innerWidth;
 const height = window.innerHeight;
-const offsetLeft = 10;
+const width = window.innerWidth; 
+const isPhone = height > width;
+const offsetLeft = isPhone ? 10 : 100;
 const offsetTop = 50;
-const margin = 10;
+const margin = isPhone ? 10 : 10;
 
 const CARD_WIDTH = (width - offsetLeft * 2 - margin * 9) / 10;
 const CARD_HEIGHT = CARD_WIDTH * 1.2;
 const card_border = 4;
 const card_dom_width = CARD_WIDTH - 2 * card_border;
 const card_dom_height = CARD_HEIGHT - 2 * card_border;
+
+const font_size = isPhone ? card_dom_width / 2 : 22;
+const yadd_view = font_size + 5;
+const yadd_back = 12;
 
 const source_top = offsetTop + margin;
 const work_top = offsetTop + CARD_HEIGHT + 2 * margin;
@@ -122,7 +127,7 @@ class Container{
         let groupN = Math.floor((this.cards.length - 1) / 10);
         return this.type == "tomb" ? 
         this.position : 
-        this.position.plus( new Vec(20 * groupN, 0) );
+        this.position.plus( new Vec(yadd_back * groupN, 0) );
     }
     in(cards) {
         cards = !Array.isArray(cards) ? [cards] : cards;
@@ -149,7 +154,7 @@ class WorkCol extends Container{
         return !this.lastCard;
     }
     get nextPosition() {
-        let yadd = this.lastCard?.isView ? 24 : 12;
+        let yadd = this.lastCard?.isView ? yadd_view : yadd_back;
         return this.lastCard?.position.plus(new Vec(0, yadd)) ?? this.position;
     }
     get isCompleted() {
@@ -192,7 +197,7 @@ class WorkCol extends Container{
         let cards = this.getCards().filter(card => card.isView);
         let {x: x0, y: y0} = cards[0].position;
         let y = max_y - y0;
-        let yadd = Math.min(Math.floor(y / (cards.length - 1)), 24);        
+        let yadd = Math.min(Math.floor(y / (cards.length - 1)), yadd_view);        
         cards.forEach((card, i) => {
             card.moveTo(new Vec(x0, y0 + yadd * i));
         });
@@ -275,6 +280,7 @@ class Game{
             this.timeText = text;
         }, 500);
         document.querySelector(".header").prepend(timer);
+        document.ondblclick = (event) => {event.preventDefault();};
     }
     playAudio(type) {
         this.audio[type].play();
