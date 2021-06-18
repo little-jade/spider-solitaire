@@ -11,7 +11,7 @@ const card_border = isPhone ? 2 : 4;
 const card_dom_width = CARD_WIDTH - 2 * card_border;
 const card_dom_height = CARD_HEIGHT - 2 * card_border;
 
-const font_size = isPhone ? card_dom_width / 2 : 22;
+const font_size = isPhone ? card_dom_width / 2.5 : 22;
 const yadd_view = font_size + 5;
 const yadd_back = card_border * 3;
 
