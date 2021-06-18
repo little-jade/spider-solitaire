@@ -289,7 +289,7 @@ class Game{
             this.timeText = text;
         }, 500);
         document.querySelector(".header").prepend(timer);
-        document.ondblclick = (event) => {event.preventDefault();};
+        document.ondblclick = (event) => false;
     }
     playAudio(type) {
         this.audio[type].play();
@@ -316,6 +316,7 @@ class Game{
                 if(card.container?.type != "work") return;
                 this.pointerdown(card, e);
             });
+            card.setEvent("ondragstart",  () => false);
             return card;
         });
         this.source.in(this.cards);
