@@ -7,13 +7,13 @@ const margin = isPhone ? 5 : 10;
 
 const CARD_WIDTH = (width - offsetLeft * 2 - margin * 9) / 10;
 const CARD_HEIGHT = CARD_WIDTH * 1.2;
-const card_border = 4;
+const card_border = isPhone ? 2 : 4;
 const card_dom_width = CARD_WIDTH - 2 * card_border;
 const card_dom_height = CARD_HEIGHT - 2 * card_border;
 
-const font_size = isPhone ? card_dom_width / 2 : 22;
+const font_size = isPhone ? card_dom_width / 3 : 22;
 const yadd_view = font_size + 5;
-const yadd_back = 12;
+const yadd_back = card_border * 3;
 
 const source_top = offsetTop + margin;
 const work_top = offsetTop + CARD_HEIGHT + 2 * margin;
@@ -51,6 +51,7 @@ class Card {
         this._dom = elt("div", {class: `card color_${color} card_back`}, [text]);
         this._dom.style.width = card_dom_width + "px";
         this._dom.style.height = card_dom_height + "px";
+        this._dom.style["border-width"] = card_border + "px";
         document.querySelector(".main").append(this._dom);
     }
     setEvent(eventName, callBack) {
@@ -124,6 +125,7 @@ class Container{
         this._dom.style.left = position.x + "px";
         this._dom.style.width = card_dom_width + "px";
         this._dom.style.height = card_dom_height + "px";
+        this._dom.style["border-width"] = card_border + "px";
         document.body.append(this._dom)
     }
     get nextPosition() {
@@ -275,6 +277,7 @@ class Game{
 
         document.querySelector(".floor").append(...selects, ...buttons);
         let timer = elt("span", {class: "timer"});
+        timer.style.left = offsetLeft + "px";
         setInterval(() => {
             let time = Date.now() - this.time;
             let s = time / 1000;
