@@ -1,9 +1,9 @@
 const height = window.innerHeight;
 const width = window.innerWidth; 
 const isPhone = height > width;
-const offsetLeft = isPhone ? 2 : 200;
+const offsetLeft = isPhone ? 5 : 200;
 const offsetTop = 50;
-const margin = isPhone ? 5 : 10;
+const margin = isPhone ? 4 : 10;
 
 const CARD_WIDTH = (width - offsetLeft * 2 - margin * 9) / 10;
 const CARD_HEIGHT = CARD_WIDTH * 1.2;
@@ -11,7 +11,7 @@ const card_border = isPhone ? 2 : 4;
 const card_dom_width = CARD_WIDTH - 2 * card_border;
 const card_dom_height = CARD_HEIGHT - 2 * card_border;
 
-const font_size = isPhone ? card_dom_width / 3 : 22;
+const font_size = isPhone ? card_dom_width / 2 : 22;
 const yadd_view = font_size + 5;
 const yadd_back = card_border * 3;
 
@@ -244,7 +244,7 @@ class Game{
     init() {
         let buttons = [
             {text: "重开", class: "button", fuc: () => {this.restart();}},
-            {text: "新游戏", class: "button", fuc: () => {this.nextLevel();}},
+            {text: "新局", class: "button", fuc: () => {this.nextLevel();}},
             {text: "提示", class: "button button_tip", fuc: () => {this.tip();}},
             {text: "撤销", class: "button button_revoke", fuc: () => {this.playAudio("click");this.revoke();}},
         ].map( item => {
