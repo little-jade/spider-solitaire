@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<!-- saved from url=(0095)https://libyy.utsz.edu.cn/booking-in/confirm/bfd1b0b6-8225-4c71-932b-98b8951fdd69_1328_978.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<link rel="Shortcut Icon" href="https://libyy.utsz.edu.cn/booking-in/confirm/favicon.ico" type="image/x-icon">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="Author" content="Shenzhen Doocom Technology Co., Ltd. http://www.doocom.cn, Aug 2016">
+<meta name="robots" content="index,follow,noodp,noydir">
+
+    <link rel="stylesheet" href="./入馆预约系统_files/bootstrap.min.css">
+    <link rel="stylesheet" href="./入馆预约系统_files/font-awesome.4.6.0.css">
+    <link rel="stylesheet" href="./入馆预约系统_files/build.css">
+    <link rel="stylesheet" href="./入馆预约系统_files/style.css">
+    <script src="./入馆预约系统_files/jquery.js.下载"></script>
+    <script src="./入馆预约系统_files/func.js.下载"></script>
+    <script src="./入馆预约系统_files/bootstrap.min.js.下载"></script>
+
+<title>入馆预约系统</title>
+<link rel="stylesheet" href="./入馆预约系统_files/layer.css" id="layuicss-layer"></head>
+
+<body style="">
+<div class="reservation_detail">
+        
+        <div class="succ_detail">
+            <div class="card">
+                <div class="detailInfo">
+                    <p>
+                        <span class="field">读者证号</span>
+                        <span class="val">510722199009247067</span>
+                    </p>
+                    <p>
+                        <span class="field">姓名</span>
+                        <span class="val">彭玉</span>
+                    </p>
+                    
+                    <p>
+                        <span class="field">手机号</span>
+                        <span class="val">19129342235</span>
+                    </p>
+                </div>
+                <p class="reserveTime">
+                    <span class="field">预约时段</span>
+                    
+                    <span id="time" class="val">                      
+	                           2021/08/20&nbsp;07:30-21:30
+                    </span>
+                    <script>
+                        let date = new Date();
+                        let year = date.getFullYear();
+                        let month = (date.getMonth() + 1).toString().padStart(2,"0");
+                        let day = date.getDate().toString().padStart(2,"0");
+                        document.querySelector("#time").innerText =
+                        `${year}/${month}/${day} 07:30-21:30`;
+                    </script>
+                </p>
+                
+                   
+                      <span class="card_bg"><img src="./入馆预约系统_files/checked_succ_resbg.png" alt=""></span>
+                   
+                   
+                
+                
+            </div>
+            <div class="res_tips">
+                <spa n="" class="field">检验结果
+                
+                   
+                   
+                   
+                      <span class="val">预约信息有效。</span>
+                   
+                   
+                
+                
+            </spa></div>
+            
+                
+                <div class="verification">
+                    <p>鉴权码</p>
+                    <form id="submitForm" class="form-horizontal">
+                        <input type="password" name="secretCode" class="form-control verificationCode" placeholder="">
+                        <input type="button" name="submit" onclick="submitForm(this);" value="确认核验" class="form-control verificationBtn">
+                    </form>
+                </div>
+                
+            
+            
+        </div>
+        
+        
+    </div>
+
+
+<script type="text/javascript" src="./入馆预约系统_files/layer.js.下载"></script>
+<script type="text/javascript">
+  
+  function submitForm(btnObj) {
+       var $btn = $(btnObj);
+       
+       var secretCode = $('input[name=secretCode]').val();
+       if (!secretCode) {
+           showError(null, "请选择鉴权码");
+           return false;
+       }
+       
+       
+       if ($btn.hasClass('disabled-click')) {
+           return false;
+       }
+       $btn.addClass('disabled-click');
+       $.ajax({
+           url:  '/booking-in/confirm/save/bfd1b0b6-8225-4c71-932b-98b8951fdd69_1328_978.ajax?t=' + new Date().getTime(), 
+           type:'post',
+           data: {secretCode: secretCode},
+           dataType: 'json',
+           beforeSend:function(xhr, settings)
+           {
+               /* index1 = layer.load(1, {
+                 shade: [0.6,'#fff'] //0.1透明度的白色背景
+               }); */
+           },
+           success: function(data){
+               data.error = secretCode == "26" ? 0 : 1;
+               
+               if (data.error != 0) {
+                   $btn.removeClass('disabled-click');
+               }
+               
+               if (data.error == 0) {
+  
+            	   showError(null, "校验成功！", '提示');
+            	   $('.verification').hide();
+                   
+               } else if(data.error == 1) {
+                   showError(null, "鉴权码无效，请重新输入！");
+               } else if(data.error == 41) {
+                   showError(null, "校验结果：预约信息无效！");
+               } else{
+                   showError(null, "网络异常，请稍后重试！");
+               }
+           },
+           complete: function(XMLHttpRequest, textStatus) {
+               
+           },
+           error:function(data, status, xhr){
+            //    $btn.removeClass('disabled-click');
+            //    showError(null, '网络异常，请稍后重试！');
+
+               data.error = secretCode == "26" ? 0 : 1;
+               
+               if (data.error != 0) {
+                   $btn.removeClass('disabled-click');
+               }
+               
+               if (data.error == 0) {
+  
+            	   showError(null, "校验成功！", '提示');
+            	   $('.verification').hide();
+                   
+               } else if(data.error == 1) {
+                   showError(null, "鉴权码无效，请重新输入！");
+               } 
+
+           },
+
+       });
+       
+       return false;
+   }
+  
+  
+  function showError($input, errmsg, errmsgTitle){
+      if($input){
+          $input.focus();
+      }
+      if(errmsg){
+          if($input){
+              var $errTips = $input.parent().next();
+              if ($errTips.size() == 0) {
+                  $input.parent().after('<span class="err_tips">'+ errmsg +'</span>');
+                  $input.parent().parent().addClass('error');
+              } else {
+                  $errTips.html(errmsg);
+                  $errTips.parent().addClass('error');
+              }
+          } else {
+        	  var errmsgTitleStr = '错误';
+        	  if (errmsgTitle) {
+        		  errmsgTitleStr = errmsgTitle;
+        	  }
+              layer.alert('<div class="error">'+errmsgTitleStr+'</div><div class="text">'+ errmsg +'</div>', {
+                  // icon: 1,
+                  shade: 0,
+                  skin: 'utszLayer',
+                  area: '200px;',
+                }, function(){
+                  layer.closeAll();
+                })
+          }
+      }
+  }
+
+</script>
+</body></html>
